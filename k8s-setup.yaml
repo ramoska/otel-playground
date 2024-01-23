@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: otel-playground
+  labels:
+    name: otel-playground
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: otel-playground
+  name: mysql-pv-claim
+  labels:
+    app: otel-playground
+    tier: mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: otel-playground
+  name: mysql
+  labels:
+    app: ote-playground
+    tier: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-playground
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: otel-playground
+        tier: mysql
+    spec:
+      containers:
+        - image: mysql:8.0
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+            - name: MYSQL_DATABASE
+              value: dev
+            - name: MYSQL_USER
+              value: dev
+            - name: MYSQL_PASSWORD
+              value: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: otel-playground
+  labels:
+    app: otel-playground
+    tier: mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: otel-playground
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: otel-playground
+  name: redis
+  labels:
+    app: otel-playground
+    tier: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-playground
+      tier: redis
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: otel-playground
+        tier: redis
+    spec:
+      containers:
+        - image: redis:7.2-alpine
+          name: redis
+          ports:
+            - containerPort: 6379
+              name: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: otel-playground
+  labels:
+    app: otel-playground
+    tier: redis
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: otel-playground
+    tier: redis
+  clusterIP: None

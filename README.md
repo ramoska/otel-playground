@@ -15,7 +15,7 @@ evolution of this repo should correspond to theses steps:
 ## About app itself
 App should be pretty simple GraphQL AOI with some basic functionality GraphQL 
 because I want to try to experiment with it on Symfony adn see how it works
-togehter with API Platform and how hard it would be set up without out of the
+together with API Platform and how hard it would be set up without out of the
 box support for types, queries, and mutations API Platform provides.
 
 In later iterations maybe some other PHP service will be added to the mix to
