@@ -125,3 +125,5 @@ spec:
     app: otel-playground
     tier: redis
   clusterIP: None
+---
+# {{pwd}}
