@@ -1,1 +1,3 @@
-FROM php:8.3-alpine
+FROM php:8.3-fpm-alpine
+
+WORKDIR /var/www/html

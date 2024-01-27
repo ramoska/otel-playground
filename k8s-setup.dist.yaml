@@ -126,4 +126,83 @@ spec:
     tier: redis
   clusterIP: None
 ---
-# {{pwd}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: otel-playground
+  name: api
+  labels:
+    app: otel-playground
+    tier: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-playground
+      tier: api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: otel-playground
+        tier: api
+    spec:
+      containers:
+        - image: localhost:32000/otel-playground/php:{{tag}}
+          name: php-fpm
+          volumeMounts:
+            - name: api
+              mountPath: /var/www/html
+        - image: localhost:32000/otel-playground/nginx:{{tag}}
+          name: nginx
+          ports:
+            - containerPort: 80
+              name: nginx
+          volumeMounts:
+            - name: api
+              mountPath: /var/www/html
+      volumes:
+        - name: api
+          hostPath:
+            path: /var/mounts/otel-playground/api
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: otel-playground
+  labels:
+    app: otel-playground
+    tier: api
+spec:
+  ports:
+    - name: php-fpm
+      protocol: TCP
+      port: 80
+  selector:
+    app: otel-playground
+    tier: api
+  clusterIP: None
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api
+  namespace: otel-playground
+  labels:
+    app: otel-playground
+    tier: api
+spec:
+  rules:
+    - host: api.otel-playground.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 80

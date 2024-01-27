@@ -1,1 +1,9 @@
 k8s-setup.yaml
+
+api/.env.local
+api/.env.local.php
+api/.env.*.local
+api/config/secrets/prod/prod.decrypt.private.php
+api/public/bundles/
+api/var/
+api/vendor/
