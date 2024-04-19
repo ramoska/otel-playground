@@ -9,6 +9,15 @@ framework:
   #esi: true
   #fragments: true
 
+  http_client:
+    scoped_clients:
+      service.client:
+        name: 'service.client'
+        base_uri: '%service.url%'
+        headers:
+          Accept: 'application/json'
+          Content-Type: 'application/json'
+
 when@test:
   framework:
     test: true

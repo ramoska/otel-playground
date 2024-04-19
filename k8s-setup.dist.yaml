@@ -151,6 +151,9 @@ spec:
       containers:
         - image: localhost:32000/otel-playground/php:{{tag}}
           name: php-fpm
+          env:
+            - name: COMPOSER_ALLOW_SUPERUSER
+              value: "1"
           volumeMounts:
             - name: api
               mountPath: /var/www/html
@@ -165,7 +168,7 @@ spec:
       volumes:
         - name: api
           hostPath:
-            path: /var/mounts/otel-playground/api
+            path: {{pwd}}/api
             type: Directory
 ---
 apiVersion: v1
@@ -206,3 +209,66 @@ spec:
                 name: api
                 port:
                   number: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: otel-playground
+  name: service
+  labels:
+    app: otel-playground
+    tier: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-playground
+      tier: service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: otel-playground
+        tier: service
+    spec:
+      containers:
+        - image: localhost:32000/otel-playground/php:{{tag}}
+          name: php-fpm
+          env:
+            - name: COMPOSER_ALLOW_SUPERUSER
+              value: "1"
+          volumeMounts:
+            - name: service
+              mountPath: /var/www/html
+        - image: localhost:32000/otel-playground/nginx:{{tag}}
+          name: nginx
+          ports:
+            - containerPort: 80
+              name: nginx
+          volumeMounts:
+            - name: service
+              mountPath: /var/www/html
+      volumes:
+        - name: service
+          hostPath:
+            path: {{pwd}}/service
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service
+  namespace: otel-playground
+  labels:
+    app: otel-playground
+    tier: service
+spec:
+  ports:
+    - name: php-fpm
+      protocol: TCP
+      port: 80
+  selector:
+    app: otel-playground
+    tier: service
+  clusterIP: None
